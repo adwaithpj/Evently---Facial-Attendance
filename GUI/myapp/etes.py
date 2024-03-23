@@ -1,52 +1,23 @@
 import flet as ft
 
 def main(page: ft.Page):
-    def page_resize(e):
-        pw.value = f"{page.width} px"
-        pw.update()
+    def on_column_scroll(e: ft.OnScrollEvent):
+        print(
+            f"Type: {e.event_type}, pixels: {e.pixels}, min_scroll_extent: {e.min_scroll_extent}, max_scroll_extent: {e.max_scroll_extent}"
+        )
 
-    page.on_resize = page_resize
-
-    pw = ft.Text(bottom=50, right=50, style="displaySmall")
-    page.overlay.append(pw)
-    page.add(
-        ft.ResponsiveRow(
-            [
-                ft.Container(
-                    ft.Text("Column 1"),
-                    padding=5,
-                    bgcolor=ft.colors.YELLOW,
-                    col={"sm": 6, "md": 4, "xl": 2},
-                ),
-                ft.Container(
-                    ft.Text("Column 2"),
-                    padding=5,
-                    bgcolor=ft.colors.GREEN,
-                    col={"sm": 6, "md": 4, "xl": 2},
-                ),
-                ft.Container(
-                    ft.Text("Column 3"),
-                    padding=5,
-                    bgcolor=ft.colors.BLUE,
-                    col={"sm": 6, "md": 4, "xl": 2},
-                ),
-                ft.Container(
-                    ft.Text("Column 4"),
-                    padding=5,
-                    bgcolor=ft.colors.PINK_300,
-                    col={"sm": 6, "md": 4, "xl": 2},
-                ),
-            ],
-        ),
-        ft.ResponsiveRow(
-            [
-                ft.TextField(label="TextField 1", col={"md": 4}),
-                ft.TextField(label="TextField 2", col={"md": 4}),
-                ft.TextField(label="TextField 3", col={"md": 4}),
-            ],
-            run_spacing={"xs": 10},
-        ),
+    cl = ft.Column(
+        spacing=10,
+        height=200,
+        width=200,
+        scroll=ft.ScrollMode.ALWAYS,
+        on_scroll=on_column_scroll,
     )
-    page_resize(None)
+    for i in range(0, 50):
+        cl.controls.append(ft.Text(f"Text line {i}", key=str(i)))
 
-ft.app(target=main)
+    page.add(
+        ft.Container(cl, border=ft.border.all(1)),
+    )
+
+ft.app(main)

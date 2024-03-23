@@ -1,5 +1,5 @@
 import flet as ft
-from flet_core import border_radius, margin , padding
+from flet_core import border_radius, margin , padding, Animation
 from flet_route import Params, Basket
 import time
 import requests
@@ -225,6 +225,7 @@ class Dashboard:
 
         # Dashboard Pagelet
         self.dashboard_pagelet = ft.Pagelet(
+            expand=True,
             content=ft.Container(
                 visible=True,
                 content=ft.Column([ft.Text("Dashboard!")], alignment=ft.MainAxisAlignment.START,
@@ -236,35 +237,289 @@ class Dashboard:
         )
 
         self.about_us_pagelet = ft.Pagelet(
-
-            visible=False,
             expand=True,
+            visible=False,
+
+            expand_loose=True,
+
             # padding=padding.only(top=55, bottom=20),
             content=ft.ResponsiveRow(
-
+                expand=True,
                 alignment=ft.MainAxisAlignment.CENTER,
-                # vertical_alignment=ft.CrossAxisAlignment.CENTER,
+                vertical_alignment=ft.CrossAxisAlignment.CENTER,
                 columns=1,
-                spacing=40,
-                run_spacing=100,
+                spacing=60,
+                # run_spacing=30,
                 controls=[
                     ft.Container(
-                        padding=padding.only(top=70),
-                        content=ft.Text(
-                            text_align=ft.TextAlign.CENTER,
-                            size=70,
-                            font_family="Circular Spotify Tx T",
-                            value="About Us",
-                        ),
-                    ),
-                    ft.Container(
-                        alignment=ft.Alignment(0, 0),
-                        content=ft.Text("Column 1"),
-                        padding=15,
-                        bgcolor="grey",
-                        col={"sm": 6, "md": 4, "xl": 2},
-                    ),
+                        # bgcolor='grey',
+                        padding=padding.only(top=70,bottom=100,left=30,right=30),
+                        content=ft.Column(
+                            horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+                            width=page.window_width,
+                            height=830,
+                            spacing=40,
+                            scroll=ft.ScrollMode.ALWAYS,
+                            adaptive=True,
+                            # animate_offset=ft.animation.Animation(400,"easeOutSine"),
+                            controls=[
+                                ft.Text(
+                                    text_align=ft.TextAlign.CENTER,
+                                    size=70,
+                                    font_family="Circular Spotify Tx T",
+                                    value="About Evently",
+                                ),
+                                ft.Container(
+                                    padding=padding.only(left=100,right=100),
+                                    content=ft.Text(
+                                        value="Welcome to Evently, where we revolutionize event management with cutting-edge technology and a passion for sustainability! 🌟",
+                                        style=ft.TextStyle(
+                                            font_family='DM Sans Italic',
+                                            size=29,
+                                        ),
+                                        text_align=ft.TextAlign.CENTER,
 
+                                    )
+                                ),
+                                ft.Text(
+                                    text_align=ft.TextAlign.CENTER,
+                                    size=35,
+                                    font_family="Circular Spotify Tx T",
+                                    value="Our Mission",
+                                ),
+                                ft.Container(
+                                    padding=padding.only(left=100, right=100),
+                                    content=ft.Text(
+
+                                        value='At Evently, our mission is clear: to make event planning smoother, faster, '
+                                              'and more eco-friendly. We are committed to reducing paper waste and carbon emissions by offering a digital solution that simplifies event management while minimizing the impact on our planet. 🌍♻️',
+                                        style=ft.TextStyle(
+                                            font_family='DM Sans Italic',
+                                            size=29,
+                                        ),
+                                        text_align=ft.TextAlign.CENTER,
+
+                                    )
+                                ),
+                                ft.Text(
+                                    text_align=ft.TextAlign.CENTER,
+                                    size=35,
+                                    font_family="Circular Spotify Tx T",
+                                    value="What We Do",
+                                ),
+                                ft.Container(
+                                    padding=padding.only(left=100, right=100),
+                                    content=ft.Text(
+
+                                        value='Evently provides a seamless platform for event organizers to create, manage, '
+                                              'and host events with ease. From fast face recognition for check-ins to real-time '
+                                              'updates on event performance, we strive to empower organizers and attendees alike.',
+                                        style=ft.TextStyle(
+                                            font_family='DM Sans Italic',
+                                            size=29,
+                                        ),
+                                        text_align=ft.TextAlign.CENTER,
+
+                                    )
+                                ),
+                                ft.Text(
+                                    text_align=ft.TextAlign.CENTER,
+                                    size=35,
+                                    font_family="Circular Spotify Tx T",
+                                    value="Our Team",
+                                ),
+                                ft.Container(
+
+                                    padding=padding.only(left=100, right=100),
+                                    content=ft.Text(
+
+                                        value='Evently is brought to you by a dedicated team of innovators, tech enthusiasts, and sustainability advocates.'
+                                              ' We believe in the power of technology to make positive change, and were excited to share our passion with you.',
+
+                                        style=ft.TextStyle(
+                                            font_family='DM Sans Italic',
+                                            size=29,
+                                        ),
+                                        text_align=ft.TextAlign.CENTER,
+
+                                    )
+                                ),
+                                ft.Container(
+                                    content=ft.ResponsiveRow(
+                                        alignment=ft.MainAxisAlignment.CENTER,
+
+                                        controls=[
+                                            ft.Container(
+                                                # bgcolor='black',
+                                                content=ft.Row(
+                                                    alignment=ft.MainAxisAlignment.SPACE_AROUND,
+                                                    controls=[
+
+                                                        ft.Container(
+                                                            content=ft.Column(
+                                                                horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+                                                                controls=[
+                                                                    ft.Image(
+                                                                        src='assets/about_us_team/adwaith.jpg',
+                                                                        width=200,
+                                                                        height=200,
+                                                                        border_radius=border_radius.all(50),
+                                                                        fit=ft.ImageFit.FIT_WIDTH,
+                                                                    ),
+                                                                    ft.Text(
+                                                                        text_align=ft.TextAlign.CENTER,
+                                                                        value='Adwaith PJ',
+                                                                        size=16,
+                                                                        font_family='DM Sans Bold Italic',
+                                                                    ),
+                                                                    ft.Text(
+                                                                        text_align=ft.TextAlign.CENTER,
+                                                                        value='2129013',
+                                                                        size=13,
+                                                                        font_family='DM Sans Bold Italic',
+                                                                    )
+
+
+                                                                ]
+                                                            )
+                                                        ),
+                                                        ft.Container(
+                                                            content=ft.Column(
+                                                                horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+                                                                controls=[
+                                                                    ft.Image(
+                                                                        src='assets/about_us_team/aditya11.jpg',
+                                                                        width=200,
+                                                                        height=200,
+                                                                        border_radius=border_radius.all(50),
+                                                                        fit=ft.ImageFit.FIT_WIDTH,
+                                                                    ),
+                                                                    ft.Text(
+                                                                        text_align=ft.TextAlign.CENTER,
+                                                                        value='Aditya Choudhury',
+                                                                        size=16,
+                                                                        font_family='DM Sans Bold Italic',
+                                                                    ),
+                                                                    ft.Text(
+                                                                        text_align=ft.TextAlign.CENTER,
+                                                                        value='2129011',
+                                                                        size=13,
+                                                                        font_family='DM Sans Bold Italic',
+                                                                    )
+
+                                                                ]
+                                                            )
+                                                        ),
+                                                        ft.Container(
+                                                            content=ft.Column(
+                                                                horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+                                                                controls=[
+                                                                    ft.Image(
+                                                                        src='assets/about_us_team/aditya10.jpg',
+                                                                        width=200,
+                                                                        height=200,
+                                                                        border_radius=border_radius.all(50),
+                                                                        fit=ft.ImageFit.FIT_WIDTH,
+                                                                    ),
+                                                                    ft.Text(
+                                                                        text_align=ft.TextAlign.CENTER,
+                                                                        value='Aditya kumar Singh',
+                                                                        size=16,
+                                                                        font_family='DM Sans Bold Italic',
+                                                                    ),
+                                                                    ft.Text(
+                                                                        text_align=ft.TextAlign.CENTER,
+                                                                        value='2129010',
+                                                                        size=13,
+                                                                        font_family='DM Sans Bold Italic',
+                                                                    )
+
+                                                                ]
+                                                            )
+                                                        )
+                                                    ]
+                                                )
+                                            )
+
+                                        ]
+                                    )
+                                ),
+                                ft.Container(
+                                    content=ft.ResponsiveRow(
+                                        alignment=ft.MainAxisAlignment.CENTER,
+
+                                        controls=[
+                                            ft.Container(
+                                                # bgcolor='black',
+                                                content=ft.Row(
+                                                    alignment=ft.MainAxisAlignment.SPACE_EVENLY,
+                                                    spacing=20,
+                                                    controls=[
+
+                                                        ft.Container(
+                                                            content=ft.Column(
+                                                                horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+                                                                controls=[
+                                                                    ft.Image(
+                                                                        src='assets/about_us_team/megha.jpg',
+                                                                        width=200,
+                                                                        height=200,
+                                                                        border_radius=border_radius.all(50),
+                                                                        fit=ft.ImageFit.FIT_WIDTH,
+                                                                    ),
+                                                                    ft.Text(
+                                                                        text_align=ft.TextAlign.CENTER,
+                                                                        value='Megha Varshini',
+                                                                        size=16,
+                                                                        font_family='DM Sans Bold Italic',
+                                                                    ),
+                                                                    ft.Text(
+                                                                        text_align=ft.TextAlign.CENTER,
+                                                                        value='2129154',
+                                                                        size=13,
+                                                                        font_family='DM Sans Bold Italic',
+                                                                    )
+
+                                                                ]
+                                                            )
+                                                        ),
+                                                        ft.Container(
+                                                            content=ft.Column(
+                                                                horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+                                                                controls=[
+                                                                    ft.Image(
+                                                                        src='assets/about_us_team/diptangshu.jpg',
+                                                                        width=200,
+                                                                        height=200,
+                                                                        border_radius=border_radius.all(50),
+                                                                        fit=ft.ImageFit.FIT_WIDTH,
+                                                                    ),
+                                                                    ft.Text(
+                                                                        text_align=ft.TextAlign.CENTER,
+                                                                        value='Diptangshu Bhattacherjee',
+                                                                        size=16,
+                                                                        font_family='DM Sans Bold Italic',
+                                                                    ),
+                                                                    ft.Text(
+                                                                        text_align=ft.TextAlign.CENTER,
+                                                                        value='2129023',
+                                                                        size=13,
+                                                                        font_family='DM Sans Bold Italic',
+                                                                    )
+
+                                                                ]
+                                                            )
+                                                        )
+                                                    ]
+                                                )
+                                            )
+
+                                        ]
+                                    )
+                                )
+                            ]
+                        )
+                    )
                 ]
             )
 
@@ -277,7 +532,7 @@ class Dashboard:
             content=ft.ResponsiveRow(
 
                 alignment=ft.MainAxisAlignment.CENTER,
-                # vertical_alignment=ft.CrossAxisAlignment.CENTER,
+                vertical_alignment=ft.CrossAxisAlignment.CENTER,
                 columns=1,
                 spacing=40,
                 run_spacing=100,
@@ -315,7 +570,7 @@ class Dashboard:
                 ft.Row(
                     # spacing=48,
 
-                    width=page.window_width,
+                    # width=page.window_width,
                     expand=True,
                     alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
                     vertical_alignment=ft.CrossAxisAlignment.CENTER,
