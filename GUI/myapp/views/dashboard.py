@@ -1,14 +1,18 @@
 import flet as ft
-from flet_core import border_radius, margin , padding, Animation
+from flet_core import border_radius, margin, padding, Animation
 from flet_route import Params, Basket
+from flet.plotly_chart import PlotlyChart
+import plotly.express as px
 import time
 import requests
 import json
 
 
-
 class Dashboard:
     def __init__(self):
+        self.logout_progressring = None
+        self.sidebar_profile_box = None
+        self.upper_dashboard_name = None
         self.main_body = None
         self.nav_check = None
         self.contact_us_pagelet = None
@@ -44,18 +48,71 @@ class Dashboard:
             fit=ft.ImageFit.FIT_WIDTH,
         )
 
-    # def get_token_data(self,basket: Basket):
-    #     self.data_taken_from_login.update(basket.get('response_data'))
-    #     self.user_token = self.data_taken_from_login['backendTokens']['token']
-    #     self.user_refresh_token = self.data_taken_from_login['backendTokens']['refreshToken']
-    #     self.user_id =  self.data_taken_from_login['user']['_id']
-    #     self.user_name = self.data_taken_from_login['user']['name']
-    #     self.user_email = self.data_taken_from_login['user']['email']
+        # view dashboard variable
+        self.table = None
+        self.latest_event_card = None
+        self.dashboard_analytics_card = None
+
+        # lates event card variables                 #Update this after implementing basket
+        self.latest_event_status = ft.Text(
+            value="Today's Event",
+            font_family="DM Sans Bold",
+            size=25,
+        )
+        self.latest_event_name = ft.Text(
+            value="KIIT FEST 7.0 ",
+            font_family="DM Sans Bold",
+            size=60
+        )
+        self.latest_event_description = ft.Text(
+            value="There will be Music, Dance and other cultural activites and some other fun activities also in the event",
+            font_family="DM Sans Regular",
+            # color=ft.colors.GREY_300,
+            # no_wrap=True,
+            size=15.2
+        )
+        self.latest_event_date = ft.Text(
+            text_align=ft.TextAlign.CENTER,
+
+            value="19/03/2024",
+            font_family="DM Sans Bold",
+            size=20,
+            color=ft.colors.BLUE
+
+        )
+        self.latest_event_time = ft.Text(
+            text_align=ft.TextAlign.CENTER,
+
+            value="2:00pm - 6:00pm",
+            font_family="DM Sans Bold",
+            size=15,
+            color=ft.colors.BLUE
+        )
+        self.latest_event_attendance_button = ft.FloatingActionButton(
+            text='Go to event',
+            # autofocus=True,
+            icon=ft.icons.ARROW_FORWARD_ROUNDED,
+
+        )
+
+        # Analytics Variables
+        self.df = px.data.gapminder().query("continent=='Oceania'")
+        self.fig = px.line(self.df, x="year", y="lifeExp", color="country")
+
+        # def get_token_data(self,basket: Basket):
+        #     self.data_taken_from_login.update(basket.get('response_data'))
+        #     self.user_token = self.data_taken_from_login['backendTokens']['token']
+        #     self.user_refresh_token = self.data_taken_from_login['backendTokens']['refreshToken']
+        #     self.user_id =  self.data_taken_from_login['user']['_id']
+        self.user_name = "Adwaith PJ"  # self.data_taken_from_login['user']['name']
+        self.user_email = "adwaithleans616@gmail.com"  # self.data_taken_from_login['user']['email']
+        self.user_role = "admin"
 
     def view(self, page: ft.Page, params: Params, basket: Basket):
         def check_item_clicked(e):
             e.control.checked = not e.control.checked
             page.update()
+
         # self.navigation_destination = self.dashboard_pagelet
         # dark and white theme changing function
         def change_theme(e):
@@ -63,43 +120,107 @@ class Dashboard:
                 page.theme_mode = "light"
                 self.logo.color = ""
             else:
-                page.theme_mode =    "dark"
+                page.theme_mode = "dark"
                 self.logo.color = "white"
             page.update()
             # time.sleep(0.5)
             self.toggledarklight.selected = not self.toggledarklight.selected
             page.update()
 
-        #Button for turning on and off dark and light mode
+        # Button for turning on and off dark and light mode
         self.toggledarklight = ft.IconButton(
-            on_click= change_theme,
+            on_click=change_theme,
+            # content=ft.Text("Dark Mode",style=ft.TextStyle(color=ft.colors.SURFACE_VARIANT)),
             icon='dark_mode',
             selected_icon='light_mode',
             style=ft.ButtonStyle(
-                color={"":ft.colors.BLACK,"selected":ft.colors.WHITE}
+                color={"": ft.colors.BLACK, "selected": ft.colors.WHITE}
             )
         )
 
         # Page AppBar
         self.page_appbar = ft.AppBar(
-                # leading=ft.Icon(ft.icons.PALETTE),
-                leading_width=60,
-                # title=self.logo,
-                center_title=False,
-                bgcolor=ft.colors.SURFACE,
-                adaptive=True,
-                actions=[
-                    self.toggledarklight,
+            # leading=ft.Icon(ft.icons.PALETTE),
+            leading_width=60,
+            # title=self.logo,
+            center_title=False,
+            bgcolor=ft.colors.SURFACE,
+            adaptive=True,
+            actions=[
+                self.toggledarklight,
 
-                ],
-            )
+            ],
+        )
+
+        # Logout Function
+        self.logout_progressring = ft.ProgressRing(visible=False, width=16, height=16, stroke_width=2)
+
+        def logout(e):
+            self.sidebar_profile_box.visible = False
+            self.sidebar_profile_box.open = False
+            self.logout_progressring.visible = True
+            page.update()
+
+            time.sleep(1)
+
+            page.go('/login')
 
         # Profile Button
-        self.profile_button = ft.FloatingActionButton(icon=ft.icons.ACCOUNT_CIRCLE,)
-        self.sidebar_profile_name = ft.Text("Adwaith PJ",)
-        self.sidebar_email = ft.Text('adwaithleans616@gmail.com',style=ft.TextStyle(color=ft.colors.GREY,size=12))
+        self.sidebar_profile_box = ft.AlertDialog(
+            visible=True,
+            open=False,
+            content=ft.Container(
+                height=300,
+                # padding=padding.only(top=20,bottom=20),
+                content=ft.Column(
+                    horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+                    # alignment=ft.MainAxisAlignment.CENTER,
+                    controls=[
+                        ft.Icon(ft.icons.ACCOUNT_CIRCLE, size=100),
+                        ft.Text(
+                            value=self.user_name,
+                            style=ft.TextStyle(
+                                size=25,
+                                font_family='DM Sans Bold',
+                            )),
+                        ft.Text(
+                            value=self.user_role,
+                            style=ft.TextStyle(
+                                size=15,
+                                font_family='DM Sans Regular',
+                                color=ft.colors.GREY
+                            )),
+                        ft.VerticalDivider(width=2, thickness=20),
+                        ft.IconButton(
+                            icon=ft.icons.EDIT_ROUNDED,
+                            content=ft.Text("Edit Profile"),
+                        ),
+                        ft.FloatingActionButton(
+                            icon=ft.icons.LOGOUT,
+                            # animate_size=Animation(200, "easeOutSine"),
+                            text="Logout",
+                            on_click=logout
+                        ),
+                        self.logout_progressring
+                    ]
+                )
+            )
+        )
 
-        #Navigation Routing
+        def open_sidebar_profile(e):
+            print("Profile Button Clicked")
+            self.sidebar_profile_box.visible = True
+            self.sidebar_profile_box.open = True
+            page.update()
+
+        self.profile_button = ft.FloatingActionButton(icon=ft.icons.ACCOUNT_CIRCLE, on_click=open_sidebar_profile)
+        self.sidebar_profile_name = ft.Text(
+            value=self.user_name,
+            font_family='DM Sans Bold',
+        )
+        self.sidebar_email = ft.Text(value=self.user_email, style=ft.TextStyle(color=ft.colors.GREY, size=12))
+
+        # Navigation Routing
         def navigation_routing(e):
             print(e.control.selected_index)
             if e.control.selected_index == 0:
@@ -107,7 +228,7 @@ class Dashboard:
                 self.contact_us_pagelet.visible = False
                 self.dashboard_pagelet.visible = True
                 page.update()
-            elif e.control.selected_index ==1:
+            elif e.control.selected_index == 1:
                 self.about_us_pagelet.visible = True
                 self.contact_us_pagelet.visible = False
                 self.dashboard_pagelet.visible = False
@@ -117,7 +238,6 @@ class Dashboard:
                 self.contact_us_pagelet.visible = True
                 self.dashboard_pagelet.visible = False
                 page.update()
-
 
         # Navigation Rail
         self.rail = ft.NavigationRail(
@@ -132,7 +252,7 @@ class Dashboard:
             trailing=ft.Container(
                 # bgcolor='grey',
                 padding=padding.only(top=360),
-                alignment=ft.Alignment(0,0),
+                alignment=ft.Alignment(0, 0),
                 content=ft.Column(
                     horizontal_alignment=ft.CrossAxisAlignment.CENTER,
                     controls=[
@@ -150,98 +270,374 @@ class Dashboard:
                     icon_content=ft.Icon(ft.icons.DASHBOARD_OUTLINED),
                     selected_icon_content=ft.Icon(ft.icons.DASHBOARD_ROUNDED),
                     label="Dashboard",
-                    padding=padding.only(top=-10,bottom=20),
+                    padding=padding.only(top=-10, bottom=20),
 
                 ),
                 ft.NavigationRailDestination(
                     icon_content=ft.Icon(ft.icons.HOME_REPAIR_SERVICE_OUTLINED),
                     selected_icon_content=ft.Icon(ft.icons.HOME_REPAIR_SERVICE_ROUNDED),
                     label="About US",
-                    padding=padding.only( bottom=20),
-
+                    padding=padding.only(bottom=20),
 
                 ),
                 ft.NavigationRailDestination(
                     icon=ft.icons.QUESTION_ANSWER_OUTLINED,
                     selected_icon_content=ft.Icon(ft.icons.QUESTION_ANSWER_ROUNDED),
                     label_content=ft.Text("Contact Us"),
-                    padding=padding.only( bottom=20),
+                    padding=padding.only(bottom=20),
 
                 ),
             ],
             on_change=lambda e: navigation_routing(e),
-
 
         )
 
         # Create button
         self.create_button_text = "Create Event"
         self.create_button = ft.FloatingActionButton(
-            icon=ft.icons.ADD, text=self.create_button_text,width=200,
+            icon=ft.icons.ADD, text=self.create_button_text, width=200,
             url='https://evently.adityachoudhury.com/events/create'
-
 
         )
 
-        #menu sidebar
+        # menu sidebar
         self.menu_sidebar = ft.Container(
-                                        expand=True,
-                                        content=ft.Column(
-                                            controls=[
-                                                ft.Container(
-                                                    content=ft.Text(
-                                                        "Menu",
-                                                        style=ft.TextStyle(
-                                                            size=20,
-                                                            font_family='DM Sans Medium',
-                                                        )),
-                                                    padding=padding.only(top=20,),
-                                                    alignment=ft.Alignment(-0.85,0)),
+            expand=True,
+            content=ft.Column(
+                controls=[
+                    ft.Container(
+                        content=ft.Text(
+                            "Menu",
+                            style=ft.TextStyle(
+                                size=20,
+                                font_family='DM Sans Medium',
+                            )),
+                        padding=padding.only(top=20, ),
+                        alignment=ft.Alignment(-0.85, 0)),
 
-                                            self.rail,
-                                            ]
-                                        ),
+                    self.rail,
+                ]
+            ),
 
-                                    )
+        )
 
         # Create Event Container
         self.create_event_container = ft.Container(
-                                        content=ft.Column(
-                                            controls = [
-                                                ft.Divider(height=1,thickness=1),
-                                                ft.VerticalDivider(width=3,thickness=2),
-                                                self.create_button,
-                                                ft.VerticalDivider(width=3, thickness=2),
-                                                ft.Divider(height=1, thickness=1),
+            content=ft.Column(
+                controls=[
+                    ft.Divider(height=1, thickness=1),
+                    ft.VerticalDivider(width=3, thickness=2),
+                    self.create_button,
+                    ft.VerticalDivider(width=3, thickness=2),
+                    ft.Divider(height=1, thickness=1),
 
-                                            ],
-                                            # alignment=ft.MainAxisAlignment.CENTER,
-                                            horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+                ],
+                # alignment=ft.MainAxisAlignment.CENTER,
+                horizontal_alignment=ft.CrossAxisAlignment.CENTER,
 
-                                        ),
+            ),
 
-                                        width=250,
+            width=250,
+        )
+
+        # Dashboard Pagelet variable here
+        self.upper_dashboard_name = ft.Text(
+            value=self.user_name,
+            style=ft.TextStyle(
+                size=35,
+                font_family='DM Sans Bold',
+            ),
+            color=ft.colors.INVERSE_SURFACE,
+        )
+
+        self.table = ft.DataTable(
+            # border=ft.border.all(2, "red"),
+            show_bottom_border=True,
+            # columns 里必须添加 DataColumn 类型的控件
+            column_spacing=90,
+            columns=[
+                ft.DataColumn(ft.Text("Event Name")),
+                ft.DataColumn(ft.Text("Event Owner")),
+                ft.DataColumn(ft.Text("Event Category"), numeric=True),
+                ft.DataColumn(ft.Text("Event Price"), numeric=True),
+                ft.DataColumn(ft.Text("Event Start Date"), numeric=True),
+                ft.DataColumn(ft.Text("Event End Date"), numeric=True),
+                ft.DataColumn(ft.Text("Event Participation Limit"), numeric=True),
+                ft.DataColumn(ft.Text("Event URL"), numeric=True),
+                ft.DataColumn(ft.Text("")),
+            ],
+            # rows 里必须添加 DataRow 类型的控件
+            # DataRow
+            rows=[
+                ft.DataRow(
+                    cells=[
+                        ft.DataCell(ft.Text("KIIT FEST")),
+                        ft.DataCell(ft.Text("Aditya")),
+                        ft.DataCell(ft.Text("Enterainment")),
+                        ft.DataCell(ft.Text("450")),
+                        ft.DataCell(ft.Text("27/03/2024")),
+                        ft.DataCell(ft.Text("31/03/2024")),
+                        ft.DataCell(ft.Text("100000")),
+                        ft.DataCell(ft.Text("URL")),
+                        ft.DataCell(ft.IconButton(
+                            icon=ft.icons.ARROW_FORWARD_ROUNDED
+                        ))
+                    ])
+            ]
+        )
+
+        # Latest event card variables                                                               # latest event card variables
+
+        self.latest_event_card = ft.Card(
+            content=ft.Container(
+                width=890,
+                # bgcolor='grey',
+                height=330,
+                padding=padding.all(20),
+                content=ft.Row(
+                    controls=[
+                        ft.Container(
+                            width=650,
+                            height=290,
+                            # bgcolor='green',
+                            content=ft.Column(
+                                spacing=0,
+                                alignment=ft.MainAxisAlignment.SPACE_EVENLY,
+                                # tight=True,
+                                controls=[
+                                    self.latest_event_status,
+                                    self.latest_event_name,
+                                    ft.Container(
+                                        width=500,
+                                        content=self.latest_event_description,
+                                    ),
+                                    ft.Container(
+                                        margin=margin.only(top=10),
+                                        width=166,
+                                        height=37,
+                                        padding=padding.only(top=1, bottom=1, left=10, right=10),
+                                        alignment=ft.Alignment(0, 0),
+                                        border_radius=20,
+                                        content=self.latest_event_date,
+                                        bgcolor=ft.colors.WHITE
                                     )
+
+                                ]
+                            )
+                        ),
+                        ft.Container(
+                            width=190,
+                            height=290,
+                            padding=padding.only(bottom=20),
+                            # bgcolor='blue',
+                            content=ft.Column(
+                                alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
+                                horizontal_alignment=ft.CrossAxisAlignment.END,
+                                controls=[
+                                    ft.Container(
+                                        margin=margin.only(top=10),
+                                        width=166,
+                                        height=37,
+                                        padding=padding.only(top=1, bottom=1, left=10, right=10),
+                                        alignment=ft.Alignment(0, 0),
+                                        border_radius=20,
+                                        content=self.latest_event_time,
+                                        bgcolor=ft.colors.WHITE
+                                    ),
+                                    ft.Container(
+                                        self.latest_event_attendance_button
+                                    )
+                                ]
+                            )
+                        )
+                    ]
+                )
+            )
+        )
+
+        self.dashboard_analytics_card = ft.Card(
+            content=ft.Container(
+                width=640,
+                height=330,
+                padding=padding.all(20),
+                content=ft.Column(
+                    alignment=ft.MainAxisAlignment.SPACE_EVENLY,
+                    controls=[
+                        ft.Text(
+                            value='Event Analytics',
+                            font_family='DM Sans Bold',
+                            size=25,
+                        ),
+                        ft.Container(
+                            height=270,
+                            content=ft.LineChartData(
+                                data_points=[
+                                    ft.LineChartDataPoint(1, 1),
+                                    ft.LineChartDataPoint(3, 1.5),
+                                    ft.LineChartDataPoint(5, 1.4),
+                                    ft.LineChartDataPoint(7, 3.4),
+                                    ft.LineChartDataPoint(10, 2),
+                                    ft.LineChartDataPoint(12, 2.2),
+                                    ft.LineChartDataPoint(13, 1.8),
+                                ],
+                                stroke_width=8,
+                                color=ft.colors.LIGHT_GREEN,
+                                curved=True,
+                                stroke_cap_round=True,
+                            ),
+                        )
+
+
+                    ]
+                )
+            )
+        )
+
+        # scrolling function
+        def myscroll(e: ft.OnScrollEvent):
+            # e.offset =
+            print(
+                f"Type: {e.event_type}, pixels: {e.pixels}, min_scroll_extent: {e.min_scroll_extent}, max_scroll_extent: {e.max_scroll_extent}"
+            )
 
         # Dashboard Pagelet
         self.dashboard_pagelet = ft.Pagelet(
             expand=True,
-            content=ft.Container(
-                visible=True,
-                content=ft.Column([ft.Text("Dashboard!")], alignment=ft.MainAxisAlignment.START,
-                                  expand=True),
-                padding=padding.only(top=55, bottom=20),
-                bgcolor='grey',
-            )
+            visible=True,
+            expand_loose=True,
+            content=ft.ResponsiveRow(
+                expand=True,
+                alignment=ft.MainAxisAlignment.CENTER,
+                vertical_alignment=ft.CrossAxisAlignment.CENTER,
+                columns=1,
+                controls=[
+                    ft.Container(
+                        margin=margin.only(left=44, right=44, top=25, bottom=25),
+                        # padding=padding.only(top=70, bottom=100, left=30, right=30),
+                        content=ft.Column(
+                            horizontal_alignment=ft.CrossAxisAlignment.CENTER,
 
+                            width=page.window_width,
+                            spacing=30,
+                            scroll=ft.ScrollMode.AUTO,
+                            adaptive=True,
+                            controls=[
+                                ft.Container(
+                                    # bgcolor='grey',
+                                    content=ft.ResponsiveRow(
+                                        alignment=ft.MainAxisAlignment.CENTER,
+                                        controls=[
+                                            ft.Container(
+                                                alignment=ft.Alignment(0, 0),
+                                                padding=padding.only(left=28, top=34.5, bottom=34.5),
+                                                # bgcolor='grey',
+                                                content=ft.Row(
+                                                    alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
+                                                    vertical_alignment=ft.CrossAxisAlignment.CENTER,
+                                                    controls=[
+                                                        ft.Container(
+                                                            width=450,
+                                                            height=53,
+                                                            content=self.upper_dashboard_name
+                                                        ),
+                                                        ft.Row(
+
+                                                            controls=[
+                                                                ft.Container(
+
+                                                                    content=self.toggledarklight
+                                                                ),
+                                                                ft.Container(
+                                                                    width=215,
+                                                                    height=72,
+                                                                    # padding=padding.only(right=20),
+                                                                    content=ft.FloatingActionButton(
+                                                                        # Here updating function goes <--
+                                                                        icon=ft.icons.REFRESH_ROUNDED,
+                                                                        # offset=ft.Offset(0, 0),
+                                                                        # animate_offset=ft.animation.Animation(800, "easeOutSine"),
+                                                                        text="Refresh",
+                                                                        # on_click= page.go('/'),            # When clicking this part
+                                                                    )
+                                                                ),
+                                                            ]
+                                                        )
+
+                                                    ]
+                                                )
+                                            )
+                                        ]
+                                    )
+                                ),
+                                ft.Container(
+                                    # bgcolor='grey',
+                                    expand_loose=True,
+                                    content=ft.ResponsiveRow(
+                                        alignment=ft.MainAxisAlignment.CENTER,
+
+                                        controls=[
+                                            ft.Container(
+
+                                                content=ft.Row(
+                                                    scroll=ft.ScrollMode.AUTO,
+                                                    on_scroll=myscroll,
+                                                    # auto_scroll=True,
+                                                    animate_opacity=ft.animation.Animation(400),
+                                                    alignment=ft.MainAxisAlignment.SPACE_EVENLY,
+                                                    spacing=100,
+                                                    controls=[
+                                                        self.latest_event_card,
+                                                        self.dashboard_analytics_card
+
+                                                    ]
+                                                )
+                                            )
+                                        ]
+                                    )
+                                ),
+                                ft.Container(
+                                    # bgcolor='grey',
+                                    expand_loose=True,
+                                    content=ft.ResponsiveRow(
+                                        alignment=ft.MainAxisAlignment.CENTER,
+
+                                        controls=[
+                                            ft.Column(
+                                                controls=[
+                                                    ft.Text(
+                                                        value='Upcoming Event',
+                                                        font_family='DM Sans Bold',
+                                                        size=25,
+                                                    )
+                                                ]
+                                            ),
+                                            ft.Container(
+                                                # bgcolor='grey',
+                                                expand_loose=True,
+                                                content=ft.Row(
+                                                    scroll=ft.ScrollMode.AUTO,
+                                                    alignment=ft.MainAxisAlignment.SPACE_EVENLY,
+                                                    controls=[
+                                                        self.table,
+
+                                                    ]
+                                                )
+
+                                            )  # above is the data table - this is dummy data
+                                        ]
+                                    )
+                                )
+                            ]
+                        ),
+                    )
+                ]
+            )
         )
 
         self.about_us_pagelet = ft.Pagelet(
             expand=True,
             visible=False,
-
             expand_loose=True,
-
             # padding=padding.only(top=55, bottom=20),
             content=ft.ResponsiveRow(
                 expand=True,
@@ -253,7 +649,7 @@ class Dashboard:
                 controls=[
                     ft.Container(
                         # bgcolor='grey',
-                        padding=padding.only(top=70,bottom=100,left=30,right=30),
+                        padding=padding.only(top=70, bottom=100, left=30, right=30),
                         content=ft.Column(
                             horizontal_alignment=ft.CrossAxisAlignment.CENTER,
                             width=page.window_width,
@@ -270,7 +666,7 @@ class Dashboard:
                                     value="About Evently",
                                 ),
                                 ft.Container(
-                                    padding=padding.only(left=100,right=100),
+                                    padding=padding.only(left=100, right=100),
                                     content=ft.Text(
                                         value="Welcome to Evently, where we revolutionize event management with cutting-edge technology and a passion for sustainability! 🌟",
                                         style=ft.TextStyle(
@@ -378,7 +774,6 @@ class Dashboard:
                                                                         size=13,
                                                                         font_family='DM Sans Bold Italic',
                                                                     )
-
 
                                                                 ]
                                                             )
@@ -528,38 +923,121 @@ class Dashboard:
         self.contact_us_pagelet = ft.Pagelet(
             visible=False,
             expand=True,
+            expand_loose=True,
             # padding=padding.only(top=55, bottom=20),
             content=ft.ResponsiveRow(
-
+                expand=True,
                 alignment=ft.MainAxisAlignment.CENTER,
                 vertical_alignment=ft.CrossAxisAlignment.CENTER,
                 columns=1,
-                spacing=40,
-                run_spacing=100,
+                spacing=60,
+                # run_spacing=100,
                 controls=[
                     ft.Container(
-                        padding=padding.only(top=70),
-                        content=ft.Text(
-                            text_align=ft.TextAlign.CENTER,
-                            size=70,
-                            font_family="Circular Spotify Tx T",
-                            value="Contact Us",
-                        ),
-                    ),
-                    ft.Container(
-                        alignment=ft.Alignment(0,0),
-                        content=ft.Text("Column 1"),
-                        padding=15,
-                        bgcolor="grey",
-                        col={"sm": 6, "md": 4, "xl": 2},
-                    ),
+                        padding=padding.only(top=70, bottom=100, left=30, right=30),
+                        content=ft.Column(
+                            horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+                            width=page.window_width,
+                            height=830,
+                            spacing=40,
+                            scroll=ft.ScrollMode.ALWAYS,
+                            adaptive=True,
+                            controls=[
+                                ft.Text(
+                                    text_align=ft.TextAlign.CENTER,
+                                    size=70,
+                                    font_family="Circular Spotify Tx T",
+                                    value="Contact Us",
+                                ),
+                                ft.Text(
+                                    value='For any queries or feedback, feel free to reach out to us at:',
+                                    size=25,
+                                    weight=ft.FontWeight.NORMAL,
+                                    font_family="DM Sans Medium",
+                                ),
+                                ft.Container(
+                                    content=ft.ResponsiveRow(
+                                        alignment=ft.MainAxisAlignment.CENTER,
+                                        controls=[
+                                            ft.Container(
+                                                content=ft.Row(
+                                                    alignment=ft.MainAxisAlignment.CENTER,
+                                                    controls=[
+                                                        ft.Card(
+                                                            content=ft.Container(
+                                                                width=400,
+                                                                padding=padding.all(20),
+                                                                content=ft.Column(
+                                                                    controls=[
+                                                                        ft.ListTile(
+                                                                            leading=ft.Icon(ft.icons.EMAIL,
+                                                                                            tooltip='Email'),
+                                                                            title=ft.Text(
+                                                                                value='Email',
+                                                                                weight=ft.FontWeight.BOLD,
+                                                                                font_family="DM Sans Medium",
+                                                                            ),
+                                                                            subtitle=ft.Text(
+                                                                                'Contact us through email, click the button below')
+                                                                        ),
+                                                                        ft.Row(
+                                                                            controls=[
 
+                                                                                ft.IconButton(
+                                                                                    ft.icons.ARROW_FORWARD_ROUNDED,
+                                                                                    url="mailto:adwaithleans616@gmail.com?subject=Me&body=Hello!")
+                                                                            ],
+                                                                            alignment=ft.MainAxisAlignment.END,
+                                                                        ),
+                                                                    ]
+                                                                )
+                                                            )
+                                                        ),
+                                                        ft.Card(
+                                                            content=ft.Container(
+                                                                width=400,
+                                                                padding=padding.all(20),
+                                                                content=ft.Column(
+                                                                    controls=[
+                                                                        ft.ListTile(
+                                                                            leading=ft.CircleAvatar(
+                                                                                foreground_image_url="https://img.freepik.com/free-vector/new-2023-twitter-logo-x-icon-design_1017-45418.jpg?w=740&t=st=1711190750~exp=1711191350~hmac=e73e78691ab631f9f74f59cc73fdb1062e7e1331209543b7e775b4fbc82b5e7c",
+                                                                            ),
+                                                                            title=ft.Text(
+                                                                                value='X',
+                                                                                weight=ft.FontWeight.BOLD,
+                                                                                font_family="DM Sans Medium",
+                                                                            ),
+                                                                            subtitle=ft.Text(
+                                                                                'Contact us through Twitter, click the button below')
+                                                                        ),
+                                                                        ft.Row(
+                                                                            controls=[
+
+                                                                                ft.IconButton(
+                                                                                    ft.icons.ARROW_FORWARD_ROUNDED,
+                                                                                    url="https://twitter.com/AdwaithPj")
+                                                                            ],
+                                                                            alignment=ft.MainAxisAlignment.END,
+                                                                        ),
+                                                                    ]
+                                                                )
+                                                            )
+                                                        ),
+
+                                                    ]
+                                                )
+                                            )
+                                        ]
+                                    )
+                                )
+                            ]
+                        )
+                    ),
                 ]
             )
 
         )
-
-
 
         return ft.View(
             '/dashboard',
@@ -567,6 +1045,7 @@ class Dashboard:
             spacing=0,
             controls=[
                 # self.page_appbar,
+                self.sidebar_profile_box,
                 ft.Row(
                     # spacing=48,
 
@@ -579,7 +1058,7 @@ class Dashboard:
                             content=ft.Column(
                                 controls=[
                                     self.logo,
-                                    ft.VerticalDivider(width=10,thickness=20,color='black'),
+                                    ft.VerticalDivider(width=10, thickness=20, color='black'),
                                     self.create_event_container,
                                     self.menu_sidebar,
 
@@ -588,7 +1067,7 @@ class Dashboard:
                                 horizontal_alignment=ft.CrossAxisAlignment.CENTER
                             ),
                             width=280,
-                            padding=padding.only(top=55,bottom=20),
+                            padding=padding.only(top=55, bottom=20),
 
                         ),
                         ft.VerticalDivider(width=1),

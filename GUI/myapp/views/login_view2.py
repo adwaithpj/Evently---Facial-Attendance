@@ -105,12 +105,16 @@ class LoginView:
                 # self.bs.icon =ft.Icon(name=ft.icons.CHECK_CIRCLE_ROUNDED,color="green",size=20),
                 page.dialog = self.bs
                 self.bs.open = True
+                self.pr.visible = False
                 page.update()
                 time.sleep(3)
+                self.username_textf.value = ""
+                self.password_textf.value = ""
+                self.bs.open = False
                 self.bs.visible = False
                 self.login_success.visible = False
                 page.update()
-                page.go('/dashboard')
+                page.go('/')
             elif  response_status == 404:
                 self.login_success.value = "User not found"
                 self.username_textf.border_color = "#c90000"
