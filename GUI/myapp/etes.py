@@ -1,23 +1,44 @@
 import flet as ft
 
-def main(page: ft.Page):
-    def on_column_scroll(e: ft.OnScrollEvent):
-        print(
-            f"Type: {e.event_type}, pixels: {e.pixels}, min_scroll_extent: {e.min_scroll_extent}, max_scroll_extent: {e.max_scroll_extent}"
-        )
 
-    cl = ft.Column(
-        spacing=10,
-        height=200,
-        width=200,
-        scroll=ft.ScrollMode.ALWAYS,
-        on_scroll=on_column_scroll,
+def main(page):
+    table = ft.DataTable(
+        border=ft.border.all(2, "red"),
+        show_bottom_border=True,
+        # columns 里必须添加 DataColumn 类型的控件
+        columns=[
+            ft.DataColumn(ft.Text("名字")),
+            ft.DataColumn(ft.Text("电话")),
+            ft.DataColumn(ft.Text("地址"), numeric=True),
+        ],
+        # rows 里必须添加 DataRow 类型的控件
+        # DataRow
+        rows=[
+            ft.DataRow(
+                cells=[
+                    ft.DataCell(ft.Text("John")),
+                    ft.DataCell(ft.Text("John")),
+                    ft.DataCell(ft.Text("John")),
+                ])
+        ]
     )
-    for i in range(0, 50):
-        cl.controls.append(ft.Text(f"Text line {i}", key=str(i)))
+    lv = ft.ListView(expand=1, spacing=10, padding=20, auto_scroll=True)
+    lv.controls.append(table)
+    page.add(lv)
 
-    page.add(
-        ft.Container(cl, border=ft.border.all(1)),
-    )
+    def button_clicked(e):
+        b = ft.DataRow(
+            cells=[
+                ft.DataCell(ft.Text("John")),
+                ft.DataCell(ft.Text("John")),
+                ft.DataCell(ft.Text("John")),
+            ])
 
-ft.app(main)
+        table.rows.append(b)
+        page.update()
+        print("按钮被点击")
+
+    page.add(ft.ElevatedButton(text="添加一行数据", on_click=button_clicked, data=0))
+
+
+ft.app(target=main)
