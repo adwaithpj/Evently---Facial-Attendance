@@ -1,69 +1,45 @@
-import flet as ft
+import requests
+import ujson as json
+from datetime import datetime
+import time
+# print(len(data[0]['today'][0]))
+update_event_name = ""
+update_event_date = ""
+update_event_time = ""
+update_event_desc = ""
+update_event_id   = ""
 
+def get_current_event_data(update,data: list):
+    global update_event_name, update_event_date, update_event_time, update_event_desc, update_event_id
+    try:
 
-def main(page):
-    event_name = 'kiit fest'
-    event_owner = 'kiit'
-    event_category = 'enterainment'
-    event_price = 'free'
-    event_start_date = '12/12/2021'
-    event_end_date = '12/12/2021'
-    event_participation_limit = '100'
-    event_url = 'https://kiitfest.org'
+        if len(data[0][f'{update}'][0]) > 0:
+            # print(f"{update} Event ")
+            update_event_name = data[0][f'{update}'][0]['eventName']
+            dt_obj=  data[0][f'{update}'][0]['eventStartDate']
+            update_event_date ,update_event_time = dt_obj.split('T')
+            update_event_time = update_event_time.rstrip('Z')
+            update_event_desc = data[0][f'{update}'][0]['eventDescription']
+            update_event_id = data[0][f'{update}'][0]['_id']
+            print(update_event_name)        # Comment out this after testing
+            print(update_event_date)        # Comment out this after testing
+            print(update_event_time)        # Comment out this after testing
+            print(update_event_desc)        # Comment out this after testing
+            print(update_event_id)        # Comment out this after testing
+    except Exception as e:
+        print(e)
 
-    table = ft.DataTable(
-        border=ft.border.all(2, "red"),
-        show_bottom_border=True,
-        # columns 里必须添加 DataColumn 类型的控件
-        columns=[
-            ft.DataColumn(ft.Text("Event Name")),
-            ft.DataColumn(ft.Text("Event Owner")),
-            ft.DataColumn(ft.Text("Event Category"), numeric=True),
-            ft.DataColumn(ft.Text("Event Price"), numeric=True),
-            ft.DataColumn(ft.Text("Event Start Date"), numeric=True),
-            ft.DataColumn(ft.Text("Event End Date"), numeric=True),
-            ft.DataColumn(ft.Text("Event Participation Limit"), numeric=True),
-            ft.DataColumn(ft.Text("Event URL"), numeric=True),
+def check_event():
+    try:
+        response = requests.get('https://api.npoint.io/ac84ca141e388bf2bb9c')
+        data = response.json()
+        if len(data[0]['today'][0]) > 0:
+            get_current_event_data("today",data)
+        elif len(data[0]['tomorrow'][0]) > 0:
+            get_current_event_data("tomorrow",data)
+        elif len(data[0]['upcoming'][0]) > 0:
+            get_current_event_data("upcoming",data)
+    except Exception as e:
+        print(e)
 
-        ],
-        # rows 里必须添加 DataRow 类型的控件
-        # DataRow
-        rows=[
-            ft.DataRow(
-                cells=[
-                    ft.DataCell(ft.Text("John")),
-                    ft.DataCell(ft.Text("John")),
-                    ft.DataCell(ft.Text("John")),
-                    ft.DataCell(ft.Text("John")),
-                    ft.DataCell(ft.Text("John")),
-                    ft.DataCell(ft.Text("John")),
-                    ft.DataCell(ft.Text("John")),
-                    ft.DataCell(ft.Text("John")),
-                ])
-        ]
-    )
-    lv = ft.ListView(expand=1, spacing=10, padding=20, auto_scroll=True)
-    lv.controls.append(table)
-    page.add(lv)
-
-    def button_clicked(e):
-        b = ft.DataRow(
-            cells=[
-                ft.DataCell(ft.Text("John")),
-                ft.DataCell(ft.Text("John")),
-                ft.DataCell(ft.Text("John")),
-                ft.DataCell(ft.Text("John")),
-                ft.DataCell(ft.Text("John")),
-                ft.DataCell(ft.Text("John")),
-                ft.DataCell(ft.Text("John")),
-                ft.DataCell(ft.Text("John")),
-            ])
-
-        table.rows.append(b)
-        page.update()
-        print("按钮被点击")
-
-    page.add(ft.ElevatedButton(text="添加一行数据", on_click=button_clicked, data=0))
-
-
-ft.app(target=main)
+check_event()
