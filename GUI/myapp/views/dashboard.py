@@ -98,6 +98,21 @@ class Dashboard:
         # Analytics Variables
         self.df = px.data.gapminder().query("continent=='Oceania'")
         self.fig = px.line(self.df, x="year", y="lifeExp", color="country")
+        self.linechart = ft.LineChartData(
+            data_points=[
+                ft.LineChartDataPoint(1, 1),
+                ft.LineChartDataPoint(3, 1.5),
+                ft.LineChartDataPoint(5, 1.4),
+                ft.LineChartDataPoint(7, 3.4),
+                ft.LineChartDataPoint(10, 2),
+                ft.LineChartDataPoint(12, 2.2),
+                ft.LineChartDataPoint(13, 1.8),
+            ],
+            stroke_width=8,
+            color=ft.colors.LIGHT_GREEN,
+            curved=True,
+            stroke_cap_round=True,
+        ),
 
         # def get_token_data(self,basket: Basket):
         #     self.data_taken_from_login.update(basket.get('response_data'))
@@ -108,7 +123,56 @@ class Dashboard:
         self.user_email = "adwaithleans616@gmail.com"  # self.data_taken_from_login['user']['email']
         self.user_role = "admin"
 
+    # Getting Data from API
+
+
+
+
+
+    # Getting Data from API ends here
+
+
+
     def view(self, page: ft.Page, params: Params, basket: Basket):
+
+        def update_table_data(e):
+            # Data tables variables
+            print('this is update table funciton')
+            response = requests.get("https://api.npoint.io/ac84ca141e388bf2bb9c")
+            events_data = response.json()
+            print(events_data)
+            self.table.visible = True
+            self.table.rows.clear()
+            for event in events_data:
+                print(event)
+                row = ft.DataRow(
+                    cells=[
+                        ft.DataCell(ft.Text(event["Event Name"])),
+                        ft.DataCell(ft.Text(event["Event Owner"])),
+                        ft.DataCell(ft.Text(event["Event Category"])),
+                        ft.DataCell(ft.Text(event["Event Price"])),
+                        ft.DataCell(ft.Text(event["Event Start Date"])),
+                        ft.DataCell(ft.Text(event["Event End Date"])),
+                        ft.DataCell(ft.Text(event["Event Participation Limit"])),
+                        ft.DataCell(ft.Text(event["Event URL"])),
+                        ft.DataCell(ft.IconButton(
+                            icon=ft.icons.ARROW_FORWARD_ROUNDED,
+                            url=event["Event URL"],
+                        ))
+                    ]
+                )
+                self.table.rows.append(row)
+            page.update()
+
+
+        # Data tables variables end here
+
+
+
+
+
+
+
         def check_item_clicked(e):
             e.control.checked = not e.control.checked
             page.update()
@@ -353,6 +417,7 @@ class Dashboard:
         self.table = ft.DataTable(
             # border=ft.border.all(2, "red"),
             show_bottom_border=True,
+            visible=False,
             # columns 里必须添加 DataColumn 类型的控件
             column_spacing=90,
             columns=[
@@ -368,24 +433,9 @@ class Dashboard:
             ],
             # rows 里必须添加 DataRow 类型的控件
             # DataRow
-            rows=[
-                ft.DataRow(
-                    cells=[
-                        ft.DataCell(ft.Text("KIIT FEST")),
-                        ft.DataCell(ft.Text("Aditya")),
-                        ft.DataCell(ft.Text("Enterainment")),
-                        ft.DataCell(ft.Text("450")),
-                        ft.DataCell(ft.Text("27/03/2024")),
-                        ft.DataCell(ft.Text("31/03/2024")),
-                        ft.DataCell(ft.Text("100000")),
-                        ft.DataCell(ft.Text("URL")),
-                        ft.DataCell(ft.IconButton(
-                            icon=ft.icons.ARROW_FORWARD_ROUNDED
-                        ))
-                    ])
-            ]
-        )
 
+        )
+        update_table_data(page)                                              # here table updation function
         # Latest event card variables                                                               # latest event card variables
 
         self.latest_event_card = ft.Card(
@@ -455,6 +505,9 @@ class Dashboard:
             )
         )
 
+
+
+
         self.dashboard_analytics_card = ft.Card(
             content=ft.Container(
                 width=640,
@@ -470,23 +523,10 @@ class Dashboard:
                         ),
                         ft.Container(
                             height=270,
-                            content=ft.LineChartData(
-                                data_points=[
-                                    ft.LineChartDataPoint(1, 1),
-                                    ft.LineChartDataPoint(3, 1.5),
-                                    ft.LineChartDataPoint(5, 1.4),
-                                    ft.LineChartDataPoint(7, 3.4),
-                                    ft.LineChartDataPoint(10, 2),
-                                    ft.LineChartDataPoint(12, 2.2),
-                                    ft.LineChartDataPoint(13, 1.8),
-                                ],
-                                stroke_width=8,
-                                color=ft.colors.LIGHT_GREEN,
-                                curved=True,
-                                stroke_cap_round=True,
-                            ),
+                            content=ft.Text(
+                                value="Still in beta"
+                            )
                         )
-
 
                     ]
                 )
@@ -557,7 +597,7 @@ class Dashboard:
                                                                         # offset=ft.Offset(0, 0),
                                                                         # animate_offset=ft.animation.Animation(800, "easeOutSine"),
                                                                         text="Refresh",
-                                                                        # on_click= page.go('/'),            # When clicking this part
+                                                                        on_click= update_table_data,            # When clicking this part
                                                                     )
                                                                 ),
                                                             ]
