@@ -2,7 +2,8 @@ import flet as ft
 from flet_route import Params,Basket,Routing,path
 from views.login_view2 import LoginView
 from views.dashboard import  Dashboard
-
+from views.loadingscreen import LoadingScreen
+from views.facerecogntionwindow import  Facerecognitionscreen
 def main(page: ft.Page):
     app_routes = [
         path(
@@ -10,9 +11,19 @@ def main(page: ft.Page):
             clear=False,
             view=LoginView().view),
         path(
+            url='/loading_screen',
+            clear=False,
+            view=Dashboard().view
+        ),
+        path(
             url='/',
             clear=True,
-            view=Dashboard().view
+            view=LoadingScreen().view
+        ),
+        path(
+            url='/face_recognition/:event_id',
+            clear=False,
+            view=Facerecognitionscreen().view
         )
     ]
     Routing(page=page,app_routes=app_routes)
