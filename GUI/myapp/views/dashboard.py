@@ -6,6 +6,7 @@ import plotly.express as px
 import time
 import requests
 import json
+import threading
 
 
 class Dashboard:
@@ -92,8 +93,15 @@ class Dashboard:
             text='Go to event',
             # autofocus=True,
             icon=ft.icons.ARROW_FORWARD_ROUNDED,
-
+            # on_click= print(params.get())
         )
+
+
+        self.latest_event_id = None
+        self.upcomingdata = []
+
+
+        # latest event ends here
 
         # Analytics Variables
         self.df = px.data.gapminder().query("continent=='Oceania'")
@@ -135,29 +143,94 @@ class Dashboard:
 
     def view(self, page: ft.Page, params: Params, basket: Basket):
 
-        def update_table_data(e):
+        # face recognition route
+        def route_face_recognition(e):
+            print(self.latest_event_id)
+            page.go(f'/face_recognition/{self.latest_event_id}')
+
+
+        self.latest_event_attendance_button = ft.FloatingActionButton(
+            text='Go to event',
+            # autofocus=True,
+            icon=ft.icons.ARROW_FORWARD_ROUNDED,
+            on_click=route_face_recognition
+        )
+
+
+
+        #face recognition route ends here
+
+
+
+
+        # Routing to loading screen
+        # page.go('/loading_screen')
+        # Data tables functions
+        def get_current_event_data(e, update, data: list):
+            global update_event_name, update_event_date, update_event_time, update_event_desc, update_event_id
+            try:
+
+                if len(data[0][f'{update}'][0]) > 0:
+                    # print(f"{update} Event ")
+                    if update == "today" or update == "tomorrow":
+                        self.latest_event_status.value = f"{update.capitalize()}'s Event"
+                    elif update == "upcoming":
+                        self.latest_event_status = f"{update.capitalize()} Event"
+                    self.latest_event_name.value = data[0][f'{update}'][0]['eventName']
+                    dt_obj = data[0][f'{update}'][0]['eventStartDate']
+                    self.latest_event_date.value, self.latest_event_time.value = dt_obj.split('T')
+                    self.latest_event_time.value = self.latest_event_time.value.rstrip('Z')
+                    self.latest_event_description.value = data[0][f'{update}'][0]['eventDescription']
+                    self.latest_event_id = data[0][f'{update}'][0]['_id']
+                    params.event_id = self.latest_event_id
+                    print(self.latest_event_status.value)  # Comment out this after testing
+                    print(self.latest_event_name.value)  # Comment out this after testing
+                    print(self.latest_event_time.value)  # Comment out this after testing
+                    print(self.latest_event_description.value)  # Comment out this after testing
+                    print(self.latest_event_id)  # Comment out this after testing
+            except Exception as e:
+                print(e)
+
+        def check_event(e):
+            self.upcomingdata = []
+            try:
+                response = requests.get('https://api.npoint.io/ac84ca141e388bf2bb9c')
+                data = response.json()
+                if len(data[0]['today'][0]) > 0:
+                    get_current_event_data(e, update="today", data=data)
+                    self.upcomingdata = data[0]['tomorrow'] + data[0]['upcoming']
+                elif len(data[0]['tomorrow'][0]) > 0:
+                    get_current_event_data(e, update="tomorrow", data=data)
+                    self.upcomingdata = data[0]['upcoming']
+                elif len(data[0]['upcoming'][0]) > 0:
+                    get_current_event_data(e, update="upcoming", data=data)
+                    self.upcomingdata = data[0]['upcoming'][1:]
+            except Exception as e:
+                print(e)
+            update_table_data(e, self.upcomingdata)
+
+
+
+        def update_table_data(e,data: list):
             # Data tables variables
-            print('this is update table funciton')
-            response = requests.get("https://api.npoint.io/ac84ca141e388bf2bb9c")
-            events_data = response.json()
-            print(events_data)
+            print(data)
             self.table.visible = True
             self.table.rows.clear()
-            for event in events_data:
+            for event in self.upcomingdata:
                 print(event)
                 row = ft.DataRow(
                     cells=[
-                        ft.DataCell(ft.Text(event["Event Name"])),
-                        ft.DataCell(ft.Text(event["Event Owner"])),
-                        ft.DataCell(ft.Text(event["Event Category"])),
-                        ft.DataCell(ft.Text(event["Event Price"])),
-                        ft.DataCell(ft.Text(event["Event Start Date"])),
-                        ft.DataCell(ft.Text(event["Event End Date"])),
-                        ft.DataCell(ft.Text(event["Event Participation Limit"])),
-                        ft.DataCell(ft.Text(event["Event URL"])),
+                        ft.DataCell(ft.Text(event["eventName"])),
+                        ft.DataCell(ft.Text(event["eventOwner"])),
+                        ft.DataCell(ft.Text(event["eventCategory"])),
+                        ft.DataCell(ft.Text(event["price"])),
+                        ft.DataCell(ft.Text(event["eventStartDate"].split('T')[0])),
+                        ft.DataCell(ft.Text(event["eventEndDate"].split('T')[0])),
+                        ft.DataCell(ft.Text(event["eventParticipationLimit"])),
+                        ft.DataCell(ft.Text(event["_id"])),
                         ft.DataCell(ft.IconButton(
                             icon=ft.icons.ARROW_FORWARD_ROUNDED,
-                            url=event["Event URL"],
+                            url=event["_id"],
                         ))
                     ]
                 )
@@ -435,7 +508,7 @@ class Dashboard:
             # DataRow
 
         )
-        update_table_data(page)                                              # here table updation function
+        check_event(page)                                              # here table updation function
         # Latest event card variables                                                               # latest event card variables
 
         self.latest_event_card = ft.Card(
@@ -597,7 +670,7 @@ class Dashboard:
                                                                         # offset=ft.Offset(0, 0),
                                                                         # animate_offset=ft.animation.Animation(800, "easeOutSine"),
                                                                         text="Refresh",
-                                                                        on_click= update_table_data,            # When clicking this part
+                                                                        on_click= check_event,            # When clicking this part
                                                                     )
                                                                 ),
                                                             ]
@@ -1080,7 +1153,7 @@ class Dashboard:
         )
 
         return ft.View(
-            '/dashboard',
+            '/loading_screen',
             padding=0,
             spacing=0,
             controls=[
