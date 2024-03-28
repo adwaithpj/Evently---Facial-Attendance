@@ -11,6 +11,7 @@ import threading
 
 class Dashboard:
     def __init__(self):
+        self.event_name_to_route = None
         self.logout_progressring = None
         self.sidebar_profile_box = None
         self.upper_dashboard_name = None
@@ -177,12 +178,17 @@ class Dashboard:
                     elif update == "upcoming":
                         self.latest_event_status = f"{update.capitalize()} Event"
                     self.latest_event_name.value = data[0][f'{update}'][0]['eventName']
+                    self.event_name_to_route = data[0][f'{update}'][0]['eventName']
                     dt_obj = data[0][f'{update}'][0]['eventStartDate']
                     self.latest_event_date.value, self.latest_event_time.value = dt_obj.split('T')
                     self.latest_event_time.value = self.latest_event_time.value.rstrip('Z')
                     self.latest_event_description.value = data[0][f'{update}'][0]['eventDescription']
                     self.latest_event_id = data[0][f'{update}'][0]['_id']
                     params.event_id = self.latest_event_id
+                    basket.latest_event_route = {
+                        'event_id': self.latest_event_id,
+                        'event_name': self.event_name_to_route,
+                    }
                     print(self.latest_event_status.value)  # Comment out this after testing
                     print(self.latest_event_name.value)  # Comment out this after testing
                     print(self.latest_event_time.value)  # Comment out this after testing
