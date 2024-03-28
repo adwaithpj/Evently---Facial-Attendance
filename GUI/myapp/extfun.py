@@ -1,125 +1,91 @@
-from flet import *
-def main(page:Page):
-    # page.window_width=800
+import flet as ft
+import base64
+import cv2
 
+class Countdown(ft.UserControl):
+    def __init__(self):
+        super().__init__()
+        self.cap = cv2.VideoCapture(0)
+        self.cap.set(3, 1920)
+        self.cap.set(4, 1080)
+        # Use 0 for the default camera
 
-    #menu item
-    menu = ['home','about','settings','contact']
-    page_scren = Text(page.window_width,size=30)
+    def did_mount(self):
+        self.update_timer()
 
-
-    def opendrawer(e):
-        if page.window_width < 380:
-            page.overlay.append(drawer)
-            drawer.offset = transform.Offset(0,0)
-        else:
-            closewindow()
-        page.update()
-
-    #Create collapse menu icon if size under 300
-    collapse = Container(
-        visible=False,
-        content=IconButton(icon="menu",icon_color="white",on_click=opendrawer)
-
-    )
-
-
-
-    bar = AppBar(
-        title=Text('Flet',size=30,color='white'),
-        bgcolor='blue',
-        actions=[
-            Row()
-        ]
-    )
-    #close sidebard right menu
-
-    def closewindow(e):
-        page.overlay.remove(drawer)
-        page.update()
-
-
-    # Create Side mebun if click menu icon
-
-
-    drawer = Container(
-        bgcolor="purple200",
-        padding=10,
-        margin=margin.only(left=20),
-        width=page.window_width,
-        height=page.window_height,
-        offset=transform.Offset(-3,0),
-        animate_offset=animation.Animation(300,"easeIn"),
-        content = Column(
-            [
-                IconButton(icon='close',icon_color='red',on_click=closewindow)
-
-            ]
-        )
-    )
-
-    # #loop menu and show to actions bar
-    for x in menu :
-        bar.actions[0].controls.append(
-            TextButton(x,
-                       visible=True,
-                       style=ButtonStyle(
-                           color={
-                               MaterialState.DEFAULT: 'white',
-                                }
-                            )
-                        )
-        ),
-        drawer.content.controls.append(
-            TextButton(x,
-                       visible=True,
-                       style=ButtonStyle(
-                           color={
-                               MaterialState.DEFAULT: 'white',
-                           }
-                       )
-                       )
-
-        )
-
-    def changesize(e):
-        page.window_width= int(e.control.value)
-        page_scren.value = page.window_width
-        page.update()
-
-
-
-    # Create slider for change size
-    slider_you = Slider(
-        label="change size",
-        value=int(page.window_width),
-        min=200,
-        max=800,
-        on_change=changesize
-    )
-
-
-    page.add(
-        bar,
-        page_scren,
-        slider_you
-    )
-
-    #Now check realtime if you resize window
-    def check():
+    def update_timer(self):
         while True:
-            page_scren.value = page.window_width
-            page_scren.update()
-            if page.window_width < 380:
-                for x in bar.actions[1].controls:
-                    x.visible = False
-                collapse.visible = True
-                bar.update()
-            else:
-                for x in bar.actions[1].controls:
-                    x.visible = True
-                collapse.visible = False
-                bar.update()
-            page.update()
+            ret, frame = self.cap.read()
+            if not ret:
+                break
 
-app(target=main)
+            _, im_arr = cv2.imencode('.png', frame)
+            im_b64 = base64.b64encode(im_arr)
+            self.img.src_base64 = im_b64.decode("utf-8")
+            self.update()
+
+    def build(self):
+        self.img = ft.Image(
+
+
+            border_radius=ft.border_radius.all(20)
+        )
+        return self.img
+
+def height_changed(e):
+    print(e.control.value)
+
+section = ft.Container(
+    margin=ft.margin.only(bottom=40),
+    content=ft.Row([
+        ft.Card(
+            elevation=30,
+            content=ft.Container(
+                bgcolor=ft.colors.WHITE24,
+                padding=10,
+                border_radius=ft.border_radius.all(20),
+                content=ft.Column([
+                    Countdown(),
+                    ft.Text("OPENCV WITH FLET",
+                            size=20, weight="bold",
+                            color=ft.colors.WHITE),
+                ]
+                ),
+            )
+        ),
+        ft.Card(
+            elevation=30,
+            content=ft.Container(
+                bgcolor=ft.colors.WHITE24,
+                padding=10,
+                border_radius=ft.border_radius.all(20),
+                content=ft.Column([
+                    ft.Slider(
+                        min=500, max=900, on_change=lambda e: print(e.control.value)
+                    ),
+                    ft.Slider(
+                        min=500, max=900,
+                    )
+
+                ]
+                ),
+
+            )
+        )
+    ],
+        alignment=ft.MainAxisAlignment.CENTER,
+    )
+)
+
+def main(page: ft.Page):
+    page.padding = 50
+    page.window_left = page.window_left + 100
+    page.theme_mode = ft.ThemeMode.LIGHT
+    page.add(
+        section,
+    )
+
+    page.on_disposed(lambda: ft.app_stop())
+
+if __name__ == '__main__':
+    ft.app(target=main)
