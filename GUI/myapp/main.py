@@ -4,6 +4,7 @@ from views.login_view2 import LoginView
 from views.dashboard import  Dashboard
 from views.loadingscreen import LoadingScreen
 from views.facerecogntionwindow import  Facerecognitionscreen
+from views.testview import Testingview
 def main(page: ft.Page):
     app_routes = [
         path(
@@ -17,13 +18,19 @@ def main(page: ft.Page):
         ),
         path(
             url='/',
-            clear=True,
+            clear=False,
             view=LoadingScreen().view
         ),
         path(
             url='/face_recognition/:event_id',
+            # url='/face_recognition/1',
             clear=False,
             view=Facerecognitionscreen().view
+        ),
+        path(
+            url='/test',
+            clear=False,
+            view=Testingview().view
         )
     ]
     Routing(page=page,app_routes=app_routes)
