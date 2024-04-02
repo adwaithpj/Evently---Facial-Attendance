@@ -5,8 +5,8 @@ import pickle
 import threading
 import time
 
-PICKLED_FILE_PATH = '../EncodedFiles'
-
+PICKLED_FILE_PATH = 'assets/EncodedFiles'
+global recognize_face
 
 class FaceRecognition:
     def __init__(self,event_ID):
@@ -14,7 +14,7 @@ class FaceRecognition:
         self.encodeListKnown = []
         self.studentIDs = []
         self.counter = 0
-        self.event_id = event_ID
+        self.event_id = ''
         self.cap = cv2.VideoCapture(0)
         self.cap.set(3, 640)
         self.cap.set(4, 480)
@@ -83,7 +83,7 @@ class FaceRecognition:
                 cv2.imshow('Face Recognition', frame)
 
 
-            if len(self.faceCurFrame) == 1:
+            elif len(self.faceCurFrame) == 1:
                 self.encodeCurFrame = face_recognition.face_encodings(img, self.faceCurFrame)  # changes
                 print(f'this is encodeCurFrame {self.encodeCurFrame}')
                 threading.Thread(target=self.check_face, args= (frame,)).start()
@@ -107,3 +107,7 @@ class FaceRecognition:
         self.cap.release()
         cv2.destroyAllWindows()
 
+if __name__ == "__main__":
+
+    reco =FaceRecognition('test_2')
+    reco.recognize_face()

@@ -5,9 +5,10 @@ import pickle
 from multiprocessing import Pool, cpu_count
 
 # Importing Student Images and their ids.
-IMAGE_FOLDER_PATH = 'Images'
-PICKLED_FILES_DATA_PATH = '../EncodedFiles'
+IMAGE_FOLDER_PATH = 'assets/Encoding_Images'
+PICKLED_FILES_DATA_PATH = 'assets/EncodedFiles'
 PATH_LIST = os.listdir(IMAGE_FOLDER_PATH)
+
 
 
 
