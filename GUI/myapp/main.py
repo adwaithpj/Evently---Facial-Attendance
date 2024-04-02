@@ -5,19 +5,29 @@ from views.dashboard import  Dashboard
 from views.loadingscreen import LoadingScreen
 from views.facerecogntionwindow import  Facerecognitionscreen
 from views.testview import Testingview
+from views.loginloadingscreen import LoginLoadingScreen
+from views.gotoeventloadingscreen import GotoLoadingScreen
+from views.encodingpage import EncodingScreen
+
+
 def main(page: ft.Page):
     app_routes = [
+        path(
+            url='/',
+            clear=True,
+            view=LoginLoadingScreen().view
+        ),
         path(
             url="/login",
             clear=False,
             view=LoginView().view),
         path(
-            url='/loading_screen',
+            url='/dashboard',
             clear=False,
             view=Dashboard().view
         ),
         path(
-            url='/',
+            url='/dashboardloading',
             clear=False,
             view=LoadingScreen().view
         ),
@@ -26,6 +36,16 @@ def main(page: ft.Page):
             # url='/face_recognition/1',
             clear=False,
             view=Facerecognitionscreen().view
+        ),
+        path(
+            url='/gotoevent/:event_id',
+            clear=True,
+            view=GotoLoadingScreen().view
+        ),
+        path(
+            url='/gotoevent/:event_id/encoding',
+            clear=False,
+            view=EncodingScreen().view
         ),
         path(
             url='/test',
