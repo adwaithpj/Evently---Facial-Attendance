@@ -2,15 +2,19 @@ import flet as ft
 from flet_core import border_radius, margin, padding, Animation
 from flet_route import Params, Basket
 from flet.plotly_chart import PlotlyChart
-import plotly.express as px
 import time
 import requests
 import json
 import threading
 
 
+user_token = ''
+
+
 class Dashboard:
     def __init__(self):
+        self.refresh_progressring = None
+        self.user_role = None
         self.event_name_to_route = None
         self.logout_progressring = None
         self.sidebar_profile_box = None
@@ -27,7 +31,7 @@ class Dashboard:
         self.profile_button = None
         self.create_button = None
         self.create_button_text = None
-        self.user_token = None
+        self.user_token = " "
         self.user_refresh_token = None
         self.user_id = None
         self.user_name = None
@@ -57,19 +61,20 @@ class Dashboard:
 
         # lates event card variables                 #Update this after implementing basket
         self.latest_event_status = ft.Text(
-            value="Today's Event",
+            value="There might be a problem",
             font_family="DM Sans Bold",
             size=25,
         )
         self.latest_event_name = ft.Text(
-            value="KIIT FEST 7.0 ",
+            value="Refresh the Page",
             font_family="DM Sans Bold",
             size=60
         )
         self.latest_event_description = ft.Text(
-            value="There will be Music, Dance and other cultural activites and some other fun activities also in the event",
+            value="There might be a problem with the app, reload please!",
             font_family="DM Sans Regular",
             # color=ft.colors.GREY_300,
+            max_lines=3,
             # no_wrap=True,
             size=15.2
         )
@@ -105,8 +110,8 @@ class Dashboard:
         # latest event ends here
 
         # Analytics Variables
-        self.df = px.data.gapminder().query("continent=='Oceania'")
-        self.fig = px.line(self.df, x="year", y="lifeExp", color="country")
+        # self.df = px.data.gapminder().query("continent=='Oceania'")
+        # self.fig = px.line(self.df, x="year", y="lifeExp", color="country")
         self.linechart = ft.LineChartData(
             data_points=[
                 ft.LineChartDataPoint(1, 1),
@@ -123,14 +128,7 @@ class Dashboard:
             stroke_cap_round=True,
         ),
 
-        # def get_token_data(self,basket: Basket):
-        #     self.data_taken_from_login.update(basket.get('response_data'))
-        #     self.user_token = self.data_taken_from_login['backendTokens']['token']
-        #     self.user_refresh_token = self.data_taken_from_login['backendTokens']['refreshToken']
-        #     self.user_id =  self.data_taken_from_login['user']['_id']
-        self.user_name = "Adwaith PJ"  # self.data_taken_from_login['user']['name']
-        self.user_email = "adwaithleans616@gmail.com"  # self.data_taken_from_login['user']['email']
-        self.user_role = "admin"
+
 
     # Getting Data from API
 
@@ -144,10 +142,27 @@ class Dashboard:
 
     def view(self, page: ft.Page, params: Params, basket: Basket):
 
+        global user_token
+        def get_token_data(basket: Basket):
+            global user_token
+            try:
+                self.data_taken_from_login.update(basket.get('response_data'))
+                user_token = self.data_taken_from_login['backendTokens']['token']
+                print(user_token)
+                self.user_refresh_token = self.data_taken_from_login['backendTokens']['refreshToken']
+                self.user_id =  self.data_taken_from_login['user']['_id']
+                self.user_name =   self.data_taken_from_login['user']['name']
+                self.user_email = self.data_taken_from_login['user']['email']
+                self.user_role =  self.data_taken_from_login['user']['role']
+            except TypeError:
+                page.go('/login')
+
+        get_token_data(basket)
+
         # face recognition route
         def route_face_recognition(e):
             print(self.latest_event_id)
-            page.go(f'/face_recognition/{self.latest_event_id}')
+            page.go(f'/gotoevent/{self.latest_event_id}')
 
 
         self.latest_event_attendance_button = ft.FloatingActionButton(
@@ -167,28 +182,31 @@ class Dashboard:
         # Routing to loading screen
         # page.go('/loading_screen')
         # Data tables functions
-        def get_current_event_data(e, update, data: list):
-            global update_event_name, update_event_date, update_event_time, update_event_desc, update_event_id
+        def get_current_event_data(e, update, data1: dict):
+            # global user_token
+            # global update_event_name, update_event_date, update_event_time, update_event_desc, update_event_id
+            data = data1
             try:
 
-                if len(data[0][f'{update}'][0]) > 0:
+                if len(data[f'{update}'][0]) > 0:
                     # print(f"{update} Event ")
                     if update == "today" or update == "tomorrow":
                         self.latest_event_status.value = f"{update.capitalize()}'s Event"
                     elif update == "upcoming":
                         self.latest_event_status = f"{update.capitalize()} Event"
-                    self.latest_event_name.value = data[0][f'{update}'][0]['eventName']
-                    self.event_name_to_route = data[0][f'{update}'][0]['eventName']
-                    dt_obj = data[0][f'{update}'][0]['eventStartDate']
+                    self.latest_event_name.value = data[f'{update}'][0]['eventName']
+                    self.event_name_to_route = data[f'{update}'][0]['eventName']
+                    dt_obj = data[f'{update}'][0]['eventStartDate']
                     self.latest_event_date.value, self.latest_event_time.value = dt_obj.split('T')
                     self.latest_event_time.value = self.latest_event_time.value.rstrip('Z')
-                    self.latest_event_description.value = data[0][f'{update}'][0]['eventDescription']
-                    self.latest_event_id = data[0][f'{update}'][0]['_id']
+                    self.latest_event_description.value = data[f'{update}'][0]['eventDescription']
+                    self.latest_event_id = data[f'{update}'][0]['_id']
                     params.event_id = self.latest_event_id
                     basket.latest_event_route = {
                         'event_id': self.latest_event_id,
                         'event_name': self.event_name_to_route,
                     }
+                    page.update()
                     print(self.latest_event_status.value)  # Comment out this after testing
                     print(self.latest_event_name.value)  # Comment out this after testing
                     print(self.latest_event_time.value)  # Comment out this after testing
@@ -197,38 +215,19 @@ class Dashboard:
             except Exception as e:
                 print(e)
 
-        def check_event(e):
-            self.upcomingdata = []
-            try:
-                response = requests.get('https://api.npoint.io/ac84ca141e388bf2bb9c')
-                data = response.json()
-                if len(data[0]['today'][0]) > 0:
-                    get_current_event_data(e, update="today", data=data)
-                    self.upcomingdata = data[0]['tomorrow'] + data[0]['upcoming']
-                elif len(data[0]['tomorrow'][0]) > 0:
-                    get_current_event_data(e, update="tomorrow", data=data)
-                    self.upcomingdata = data[0]['upcoming']
-                elif len(data[0]['upcoming'][0]) > 0:
-                    get_current_event_data(e, update="upcoming", data=data)
-                    self.upcomingdata = data[0]['upcoming'][1:]
-            except Exception as e:
-                print(e)
-            update_table_data(e, self.upcomingdata)
-
-
-
-        def update_table_data(e,data: list):
+        def update_table_data(data: list):
+            global user_token
             # Data tables variables
             print(data)
             self.table.visible = True
             self.table.rows.clear()
             for event in self.upcomingdata:
-                print(event)
+                # print(event)
                 row = ft.DataRow(
                     cells=[
                         ft.DataCell(ft.Text(event["eventName"])),
                         ft.DataCell(ft.Text(event["eventOwner"])),
-                        ft.DataCell(ft.Text(event["eventCategory"])),
+                        ft.DataCell(ft.Text(event["eventCategory"]['categoryName'])),
                         ft.DataCell(ft.Text(event["price"])),
                         ft.DataCell(ft.Text(event["eventStartDate"].split('T')[0])),
                         ft.DataCell(ft.Text(event["eventEndDate"].split('T')[0])),
@@ -243,14 +242,37 @@ class Dashboard:
                 self.table.rows.append(row)
             page.update()
 
+        def check_event(e):
+            global user_token
+            self.upcomingdata = []
+            print(f'this is self.user_token , {user_token}')
+            try:
+                headers = { 'authorization': f'Bearer {user_token}' }
+                url= 'https://backend.evently.adityachoudhury.com/api/event/createdByMe'
+                response = requests.get(url=url, headers=headers)
+                print(response.status_code)
+                data = response.json()
+                print(data)
+                if len(data['today'][0]) > 0:
+                    get_current_event_data(e, update="today", data1=data)
+                    self.upcomingdata = data['tomorrow'] + data['upcoming']
+                    print(self.upcomingdata)
+                elif len(data['tomorrow'][0]) > 0:
+                    get_current_event_data(e, update="tomorrow", data1=data)
+                    self.upcomingdata = data['upcoming']
+                    print(self.upcomingdata)
+                elif len(data['upcoming'][0]) > 0:
+                    print(data['upcoming'][0])
+                    get_current_event_data(e, update="upcoming", data1=data)
+                    self.upcomingdata = data['upcoming'][1:len(data['upcoming'][0]-1)]
+                    print(self.upcomingdata)
+            except Exception as e:
+                print(e)
+            update_table_data(self.upcomingdata)
+
+
 
         # Data tables variables end here
-
-
-
-
-
-
 
         def check_item_clicked(e):
             e.control.checked = not e.control.checked
@@ -297,6 +319,8 @@ class Dashboard:
 
         # Logout Function
         self.logout_progressring = ft.ProgressRing(visible=False, width=16, height=16, stroke_width=2)
+
+
 
         def logout(e):
             self.sidebar_profile_box.visible = False
@@ -485,7 +509,7 @@ class Dashboard:
 
         # Dashboard Pagelet variable here
         self.upper_dashboard_name = ft.Text(
-            value=self.user_name,
+            value=f"Welcome, {self.user_name}",
             style=ft.TextStyle(
                 size=35,
                 font_family='DM Sans Bold',
@@ -514,7 +538,8 @@ class Dashboard:
             # DataRow
 
         )
-        check_event(page)                                              # here table updation function
+
+                                                  # here table updation function
         # Latest event card variables                                                               # latest event card variables
 
         self.latest_event_card = ft.Card(
@@ -619,6 +644,7 @@ class Dashboard:
                 f"Type: {e.event_type}, pixels: {e.pixels}, min_scroll_extent: {e.min_scroll_extent}, max_scroll_extent: {e.max_scroll_extent}"
             )
 
+        check_event(page)
         # Dashboard Pagelet
         self.dashboard_pagelet = ft.Pagelet(
             expand=True,
@@ -655,7 +681,7 @@ class Dashboard:
                                                     vertical_alignment=ft.CrossAxisAlignment.CENTER,
                                                     controls=[
                                                         ft.Container(
-                                                            width=450,
+                                                            width=550,
                                                             height=53,
                                                             content=self.upper_dashboard_name
                                                         ),
@@ -1159,10 +1185,11 @@ class Dashboard:
         )
 
         return ft.View(
-            '/loading_screen',
+            '/dashboard',
             padding=0,
             spacing=0,
             controls=[
+
                 # self.page_appbar,
                 self.sidebar_profile_box,
                 ft.Row(

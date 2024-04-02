@@ -4,7 +4,7 @@ from flet_route import Params, Basket
 import time
 
 
-class LoadingScreen:
+class LoginLoadingScreen:
     def __init__(self):
         self.loading_pr = None
 
@@ -21,13 +21,11 @@ class LoadingScreen:
             time.sleep(3)
             self.loading_pr.visible = False
             page.update()
-            # page.window_progress_bar = 10
-            # page.update()
-            page.go('/dashboard')
+            page.go('/login')
 
 
         return  ft.View(
-            '/dashboardloading',
+            '/',
             padding=0,
             spacing=0,
             horizontal_alignment=ft.CrossAxisAlignment.CENTER,
@@ -43,7 +41,7 @@ class LoadingScreen:
                         controls=[
                             self.loading_pr,
                             ft.Text(
-                                value='Loading Dashboard',
+                                value='Loading'
                             ),
                             ft.IconButton(
                                 icon=ft.icons.CHANGE_CIRCLE_OUTLINED,

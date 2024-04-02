@@ -114,7 +114,7 @@ class LoginView:
                 self.bs.visible = False
                 self.login_success.visible = False
                 page.update()
-                page.go('/')
+                page.go('/dashboard')
             elif  response_status == 404:
                 self.login_success.value = "User not found"
                 self.username_textf.border_color = "#c90000"
@@ -203,7 +203,7 @@ class LoginView:
 
 
         return  ft.View(
-                '/',
+                '/login',
                 # horizontal_alignment=ft.CrossAxisAlignment.CENTER,
                 # vertical_alignment=ft.MainAxisAlignment.CENTER,
                 padding=0,
