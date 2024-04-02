@@ -6,7 +6,7 @@ from multiprocessing import Pool, cpu_count
 
 # Importing Student Images and their ids.
 IMAGE_FOLDER_PATH = 'Images'
-PICKLED_FILES_DATA_PATH = 'EncodedFiles'
+PICKLED_FILES_DATA_PATH = '../EncodedFiles'
 PATH_LIST = os.listdir(IMAGE_FOLDER_PATH)
 
 

@@ -15,7 +15,7 @@ if __name__ == "__main__":
     # print(elapsed_time)
     #
     start_time = time.time()
-    reco =FaceRecognition('test_2')
+    reco =FaceRecognition('6609419e257ab3e8dc733974')
     reco.recognize_face()
     end_time = time.time()
     print(start_time - end_time)

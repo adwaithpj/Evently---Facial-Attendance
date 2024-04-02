@@ -5,7 +5,7 @@ import pickle
 import threading
 import time
 
-PICKLED_FILE_PATH = 'EncodedFiles'
+PICKLED_FILE_PATH = '../EncodedFiles'
 
 
 class FaceRecognition:
