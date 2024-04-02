@@ -31,6 +31,8 @@ comm @ file:///home/conda/feedstock_root/build_artifacts/comm_1704278392174/work
 cookiecutter==2.6.0
 cryptography==42.0.5
 cvzone==1.6.1
+cx_Freeze==6.15.16
+cx_Logging==3.2.0
 debugpy @ file:///D:/bld/debugpy_1707444604970/work
 decorator @ file:///home/conda/feedstock_root/build_artifacts/decorator_1641555617451/work
 defusedxml @ file:///home/conda/feedstock_root/build_artifacts/defusedxml_1615232257335/work
@@ -108,6 +110,7 @@ keras==2.10.0
 Keras-Preprocessing==1.1.2
 lesscpy==0.15.1
 libclang==16.0.6
+lief==0.14.1
 loading_display==0.2.0
 Markdown==3.5.2
 markdown-it-py==3.0.0
