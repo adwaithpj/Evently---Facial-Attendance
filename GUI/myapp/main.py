@@ -4,7 +4,6 @@ from views.login_view2 import LoginView
 from views.dashboard import  Dashboard
 from views.loadingscreen import LoadingScreen
 from views.facerecogntionwindow import  Facerecognitionscreen
-from views.testview import Testingview
 from views.loginloadingscreen import LoginLoadingScreen
 from views.gotoeventloadingscreen import GotoLoadingScreen
 from views.encodingpage import EncodingScreen
@@ -46,11 +45,6 @@ def main(page: ft.Page):
             url='/gotoevent/:event_id/encoding',
             clear=False,
             view=EncodingScreen().view
-        ),
-        path(
-            url='/test',
-            clear=False,
-            view=Testingview().view
         )
     ]
     Routing(page=page,app_routes=app_routes)

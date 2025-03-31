@@ -2,7 +2,6 @@ import flet as ft
 from flet_core import border_radius, margin, padding, Animation
 from flet_route import Params, Basket
 import base64
-import cv2
 import numpy as np
 import cv2
 import face_recognition
@@ -10,13 +9,12 @@ import pickle
 import time
 import requests
 
-
-
 cap = None
 running = True
-global studentIDs, event_id, reg_users
+global studentIDs, event_id, reg_users , headers
 
 reg_users = {}
+
 
 PICKLED_FILE_PATH = 'assets/EncodedFiles'
 
@@ -69,7 +67,6 @@ class Countdown(ft.UserControl):
         self.attendance_area_id = ft.Text(value='', size=30, font_family='DM Sans Bold')
         self.attendance_area_name = ft.Text(value=' ', size=30, font_family='DM Sans Bold')
         self.attendance_area_status = ft.Text('Searching!', size=30, font_family='DM Sans Medium')
-
 
         # Attendance camera area
         self.img = ft.Image(
@@ -173,7 +170,6 @@ class Countdown(ft.UserControl):
             )
         )
 
-
     def did_mount(self):
         self.update_timer()
 
@@ -210,6 +206,7 @@ class Countdown(ft.UserControl):
                 self.attendance_area_id.value = studentIDs
                 self.student_id = studentIDs
                 self.student_name = get_name_by_id(studentIDs)
+                print(self.student_name)
                 self.attendance_area_name.value = self.student_name
                 self.page.update()  # have to implement a function here
                 print(f'studentID : {studentIDs}')  # Printing the student ID
@@ -263,7 +260,6 @@ class Countdown(ft.UserControl):
                     self.attendance_area_status.value = 'Attendance alr Done!'
                     self.page.update()
 
-
                     print("Attendance already given")
 
                     self.face_match = False
@@ -275,7 +271,12 @@ class Countdown(ft.UserControl):
                     self.counter = 1
                     self.last_attendance_time = current_time
 
-                    attendance_response = requests.post(f'https://backend.evently.adityachoudhury.com/api/event/mark/{event_id}/{self.student_id}')
+                    global headers
+
+                    attendance_response = requests.post(
+                        f'https://backend.evently.adityachoudhury.com/api/event/mark/{event_id}/{self.student_id}',
+                        headers=headers
+                    )
                     if attendance_response.status_code == 200:
                         self.attendance_area_icon.content = self.green_tick
                         self.update()
@@ -283,24 +284,18 @@ class Countdown(ft.UserControl):
                         self.attendance_area_status.value = 'Attendance Marked'
                         self.page.update()
                         print("Face Matched")
-                    # time.sleep(2)
+                        # time.sleep(2)
 
                         # self.attendance_area_icon.content = self.search_icon
                         self.face_match = False
                         self.page.update()
                         self.update()
 
-
-
-
             else:
                 self.attendance_area_icon.content = self.red_cross
                 self.update()
 
                 print("Face not Matched")
-
-
-
 
             _, im_arr = cv2.imencode('.png', frame)
             im_b64 = base64.b64encode(im_arr)
@@ -330,8 +325,8 @@ class Countdown(ft.UserControl):
             )
         )
 
-
         return self.camera_attendance_area
+
 
 class Facerecognitionscreen:
     # Constructor and Destructor starts here    -->
@@ -355,14 +350,13 @@ class Facerecognitionscreen:
         data_taken_from_login.update(basket.get('response_data'))
         user_token = data_taken_from_login['backendTokens']['token']
 
-
         global cap, event_id
         if cap is None:
             initialize_camera()
 
         # Getting values from params and Basket     -->
         self.event_id = params.get_all()["event_id"]
-        self.event_id = '6609419e257ab3e8dc733974'
+        # self.event_id = '6609419e257ab3e8dc733974'
         event_id = self.event_id
         print(event_id)
 
@@ -371,14 +365,14 @@ class Facerecognitionscreen:
             self.event_name = self.event_name["event_name"]
         except Exception as e:
             self.event_name = "Event"
-
+        global headers
         url = f'https://backend.evently.adityachoudhury.com/api/event/registeredUsers/{event_id}'
         headers = {
-            'authorization': f'Bearer {user_token}',
+            "authorization": f"Bearer {user_token}"
         }
-        response = requests.get(url=url, headers=headers)
-        print(response.raise_for_status())
-        reg_users = response.json()
+        reg_response = requests.get(url=url, headers=headers)
+        print(reg_response.raise_for_status())
+        reg_users = reg_response.json()
         print(reg_users)
 
         # Getting values from params and Basket ends here

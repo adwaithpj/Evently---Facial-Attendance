@@ -1,11 +1,11 @@
 import flet as ft
 from flet_core import border_radius, margin, padding, Animation
 from flet_route import Params, Basket
-from flet.plotly_chart import PlotlyChart
+
 import time
 import requests
 import json
-import threading
+
 
 
 user_token = ''
@@ -186,14 +186,15 @@ class Dashboard:
             # global user_token
             # global update_event_name, update_event_date, update_event_time, update_event_desc, update_event_id
             data = data1
+
             try:
 
-                if len(data[f'{update}'][0]) > 0:
-                    # print(f"{update} Event ")
+                if len(data[f'{update}']) > 0:
+                    print(f"{update} Event ")
                     if update == "today" or update == "tomorrow":
                         self.latest_event_status.value = f"{update.capitalize()}'s Event"
                     elif update == "upcoming":
-                        self.latest_event_status = f"{update.capitalize()} Event"
+                        self.latest_event_status.value = f"{update.capitalize()} Event"
                     self.latest_event_name.value = data[f'{update}'][0]['eventName']
                     self.event_name_to_route = data[f'{update}'][0]['eventName']
                     dt_obj = data[f'{update}'][0]['eventStartDate']
@@ -253,18 +254,18 @@ class Dashboard:
                 print(response.status_code)
                 data = response.json()
                 print(data)
-                if len(data['today'][0]) > 0:
+                if len(data['today']) > 0:
                     get_current_event_data(e, update="today", data1=data)
                     self.upcomingdata = data['tomorrow'] + data['upcoming']
                     print(self.upcomingdata)
-                elif len(data['tomorrow'][0]) > 0:
+                elif len(data['tomorrow']) > 0:
                     get_current_event_data(e, update="tomorrow", data1=data)
                     self.upcomingdata = data['upcoming']
                     print(self.upcomingdata)
-                elif len(data['upcoming'][0]) > 0:
+                elif len(data['upcoming']) > 0:
                     print(data['upcoming'][0])
                     get_current_event_data(e, update="upcoming", data1=data)
-                    self.upcomingdata = data['upcoming'][1:len(data['upcoming'][0]-1)]
+                    self.upcomingdata = data['upcoming'][1:len(data['upcoming'])-1]
                     print(self.upcomingdata)
             except Exception as e:
                 print(e)

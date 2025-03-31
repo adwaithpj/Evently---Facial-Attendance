@@ -6,7 +6,6 @@ import os
 import cv2
 import face_recognition
 import pickle
-from multiprocessing import Pool, cpu_count
 
 global image_folder_path, pickled_files_data_path, path_list
 path_list = ''
